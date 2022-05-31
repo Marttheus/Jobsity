@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jobsity.Application\Jobsity.Application.csproj" />
     <ProjectReference Include="..\Jobsity.Infra.CrossCutting.Identity\Jobsity.Infra.CrossCutting.Identity.csproj" />
   </ItemGroup>
 
