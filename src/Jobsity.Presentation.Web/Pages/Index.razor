@@ -2,63 +2,189 @@
 @page "/"
 @using Microsoft.AspNetCore.SignalR.Client
 @inject IAccountService AccountService
+@inject IChatService ChatService
+@inject IMessageService MessageService
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
 
-<div class="signalr-demo">
-
-    <button @onclick="JoinRoom" disabled="@(!IsConnected)">Join Room</button>
-
-    <form id="messageform">            
-        <input @bind="message"/>
-        <button @onclick:preventDefault="true" @onclick:stopPropagation="true" @onclick="Send" disabled="@(!IsConnected)">Send</button>
-    </form>
-    <hr />
-    <ul id="messagesList">
-        @foreach (var message in messages)
-        {
-            <li>@message</li>
-        }
-    </ul>
+<div class="container">
+  <div class="center">
+    <div class="chat-up">
+        <div class="groups">
+            @foreach (var group in groups)
+            {
+                var groupName = group.Name;
+                var groupId = group.Id;
+                <button class="groupsbtn" @onclick="() => JoinRoom(groupName, groupId)" disabled="@(!IsConnected)">@group.Name</button>
+            }
+        </div>
+        <div class="chat">
+            <ul id="messagesList">
+            @foreach (var message in messages.OrderBy(x => x.CreatedAt))
+            {
+                <li>@message.Sender: @message.Text</li>
+            }
+            </ul>
+        </div>
+    </div>
+    
+    <div class="chat-bottom">
+        <div class="add-room">
+            <div style="height: 100%">
+                <input style="width: 85%;display: inline-block;float: left;height: 60%;" @bind="newGroupName" type="text" placeholder="Create a new room!" />
+                <button style="width: 15%;display: inline-block;float: right;height: 60%;" @onclick="() => JoinRoom(newGroupName, null)">Add</button>
+            </div>
+            
+        </div>
+        <div class="send-msg">
+            <div style="height: 100%">
+                <input style="width: 90%;display: inline-block;float: left;height: 60%;" @bind="message" disabled="@(string.IsNullOrEmpty(GroupName))" type="text" placeholder="Send a message!" />
+                <button style="width: 10%;display: inline-block;float: right;height: 60%;" disabled="@(string.IsNullOrEmpty(GroupName))" @onclick="() => Send(message, GroupName, GroupId.Value)">Send</button>
+            </div>
+        </div>
+    </div>
+  </div>
 </div>
 
+<style>
+
+.groupsbtn {
+    display: block;
+    overflow: hidden;
+    width: 90%;
+    margin: 5px;
+}
+
+.chat-bottom{
+    display: block;
+    width: 100%;
+    height: 10%;
+}
+
+.chat-up{
+    display: block;
+    width: 100%;
+    height: 94%;
+}
+
+.add-room{
+    display: inline-block;
+    height: 100%;
+    width: 25%;
+    float: left;
+}
+
+.groups {
+    display: inline-block;
+    height: 100%;
+    overflow: auto;
+    width: 25%;
+    float: left;
+}
+
+.send-msg{
+    display: inline-block;
+    height: 100%;
+    width: 73%;
+    float: right;
+}
+
+.chat {
+    display: inline-block;
+    height: 100%;
+    overflow: auto;
+    width: 73%;
+    float: right;
+}
+
+.container {
+    height: 85vh;
+    margin-top: 25px;
+    border-radius: 3px;
+    position: relative;
+    border: 3px solid gray;
+}
+
+.center {
+  margin: 0;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+</style>
 
 @code {
     private HubConnection? hubConnection;
-    private List<string> messages = new List<string>();
+    private List<MessageViewModel> messages = new List<MessageViewModel>();
     private string? message;
-    private string? groupName = "Teste";
+    private string? newGroupName;
+    private string? GroupName;
+    private Guid? GroupId;
+    private List<ChatViewModel> groups = new List<ChatViewModel>();
     private const string baseUrl = "http://localhost:5159";
 
     protected override async Task OnInitializedAsync()
     {
         hubConnection = new HubConnectionBuilder()
             .WithUrl($"{baseUrl}/ChatHub")
+            .WithAutomaticReconnect()
             .Build();
+
+        UpdateGroups();
 
         hubConnection.On<string, string>("ReceiveMessage", (sender, message) =>
         {
             var newMessage = $"{sender}: {message}";
-            messages.Add(newMessage);
+            messages.Add(new MessageViewModel { Text = message, CreatedAt = DateTime.Now, Group = GroupName, Sender = sender });
             StateHasChanged();
         });
 
         await hubConnection.StartAsync();
     }
 
-    private async Task JoinRoom()
+    private async Task UpdateGroups()
+    {
+        groups = await ChatService.Initialize();
+        StateHasChanged();
+    }
+
+    private async Task UpdateMessages(string groupName)
+    {
+        messages = await MessageService.GetMessagesFromGroup(groupName);
+        StateHasChanged();
+    }
+
+    private async Task JoinRoom(string groupName, Guid? groupId)
     {
         if (hubConnection is not null)
         {
-            await hubConnection.InvokeAsync("JoinRoom", groupName);
+            try
+            {
+                await hubConnection.InvokeAsync("JoinRoom", groupName);
+                UpdateMessages(groupName);
+                UpdateGroups();
+
+                if (groupId is null) groupId = groups.Last().Id;
+                else GroupId = groupId;
+                
+                GroupName = groupName;
+            }
+            catch
+            {
+                
+            }
         }
     }
 
-    private async Task Send()
+    private async Task Send(string message, string groupName, Guid groupId)
     {
         if (hubConnection is not null)
         {
-            await hubConnection.InvokeAsync("SendMessageToSpecificGroup", groupName, AccountService.User.UserName, message);
+            await hubConnection.InvokeAsync("SendMessageToSpecificGroup", groupName, AccountService.User.UserName, message, groupId, AccountService.User.Id);
         }
     }
 

@@ -29,7 +29,8 @@ namespace Jobsity.Presentation.Web.Services
             IHttpService httpService,
             NavigationManager navigationManager,
             ILocalStorageService localStorageService
-        ) {
+        )
+        {
             _httpService = httpService;
             _navigationManager = navigationManager;
             _localStorageService = localStorageService;

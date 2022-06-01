@@ -1,4 +1,5 @@
-﻿using Jobsity.Infra.CrossCutting.Identity.Models;
+﻿using Jobsity.Domain.Models;
+using Jobsity.Infra.CrossCutting.Identity.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -12,11 +13,11 @@ namespace Jobsity.API.Controllers
     [ApiController]
     public class UserController : ApiControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
         private readonly AppJwtSettings _appJwtSettings;
 
-        public UserController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IOptions<AppJwtSettings> appJwtSettings)
+        public UserController(UserManager<User> userManager, SignInManager<User> signInManager, IOptions<AppJwtSettings> appJwtSettings)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -29,7 +30,7 @@ namespace Jobsity.API.Controllers
         {
             if (!ModelState.IsValid) return CreateResponse(ModelState);
 
-            var result = await _userManager.CreateAsync(new IdentityUser { UserName = registerUser.UserName, Email = registerUser.Email }, registerUser.Password);
+            var result = await _userManager.CreateAsync(new User { UserName = registerUser.UserName, Email = registerUser.Email }, registerUser.Password);
 
             var message = result.Succeeded ? "User created successfully!" : "Failed to create user, make necessary adjustments and try again.";
             return CreateResponse(result.Errors.Select(x => x.Description).ToList(), message);
@@ -56,7 +57,7 @@ namespace Jobsity.API.Controllers
                 });
             }
 
-            var buildUserResponse = new JwtBuilder()
+            var buildUserResponse = new JwtBuilder<User>()
                 .WithUserManager(_userManager)
                 .WithJwtSettings(_appJwtSettings)
                 .WithEmail(user.Email)
@@ -73,7 +74,7 @@ namespace Jobsity.API.Controllers
                     ExpiresIn = buildUserResponse.ExpiresIn,
                     UserToken = new UserToken
                     {
-                        Id = new Guid(buildUserResponse.UserToken.Id),
+                        Id = buildUserResponse.UserToken.Id,
                         Email = buildUserResponse.UserToken.Email
                     }
                 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Newtonsoft.Json;
 using System.Text.Json.Serialization;
 
 namespace Jobsity.API.Controllers
@@ -29,11 +30,11 @@ namespace Jobsity.API.Controllers
         private class Response
         {
             public int Status { get; set; }
-            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public string Message { get; set; }
-            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public List<string> Errors { get; set; }
-            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public object? Data { get; set; }
 
             public Response(int status, string message, List<string> errors, object? data)

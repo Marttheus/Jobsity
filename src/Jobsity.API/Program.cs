@@ -34,10 +34,13 @@ builder.Services.AddCors(options =>
     }
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDatabaseConfiguration(builder.Configuration);
 
 // ASP.NET Identity Settings & JWT
 builder.Services.AddApiIdentityConfiguration(builder.Configuration);
@@ -45,6 +48,12 @@ builder.Services.AddApiIdentityConfiguration(builder.Configuration);
 // Interactive AspNetUser (logged in)
 // NetDevPack.Identity dependency
 builder.Services.AddAspNetUserConfiguration();
+
+// AutoMapper Settings
+builder.Services.AddAutoMapperConfiguration();
+
+// .NET Native DI Abstraction
+builder.Services.AddDependencyInjectionConfiguration();
 
 builder.Services.AddSignalR();
 
@@ -62,7 +71,7 @@ app.UseRouting();
 
 app.UseCors(allowSpecificOrigins);
 
-app.UseAuthorization();
+//app.UseAuthorization();
 app.UseAuthConfiguration();
 
 app.UseEndpoints(endpoints =>

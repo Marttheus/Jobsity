@@ -18,6 +18,8 @@ namespace Jobsity.Presentation.Web
 
             builder.Services
                 .AddScoped<IAccountService, AccountService>()
+                .AddScoped<IChatService, ChatService>()
+                .AddScoped<IMessageService, MessageService>()
                 .AddScoped<IAlertService, AlertService>()
                 .AddScoped<IHttpService, HttpService>()
                 .AddScoped<ILocalStorageService, LocalStorageService>();

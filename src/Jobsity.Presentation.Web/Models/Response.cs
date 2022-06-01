@@ -27,7 +27,21 @@ namespace Jobsity.Presentation.Web.Models
 
     public class UserToken
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Email { get; set; }
+    }
+
+    public class ChatViewModel
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class MessageViewModel
+    {
+        public string Text { get; set; }
+        public string Sender { get; set; }
+        public string Group { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }
