@@ -22,5 +22,29 @@
         <a class="dismiss">X</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+    <script>
+        window.scrollAlwaysBottomAndCleanInput = () => {
+            var body = document.querySelector('#chat-body');
+            body.scrollTop = body.scrollHeight - body.clientHeight;
+
+            var input = document.querySelector('#inputToSend');
+            input.value = "";
+        }
+
+        window.startModal = () => {
+            var createRoomBtn = document.querySelector('#create-room-btn')
+            var createRoomModal = document.getElementById('create-room-modal')
+            var closeModal = document.getElementById('close-modal');
+
+            createRoomBtn.addEventListener('click', function () {
+                createRoomModal.classList.add('active')
+            })
+
+            closeModal.addEventListener('click', function () {
+                createRoomModal.classList.remove('active')
+            })
+        }
+        
+    </script>
 </body>
 </html>

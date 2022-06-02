@@ -25,7 +25,8 @@ namespace Jobsity.Application.Services
         public async Task<MessageViewModel> Create(NewMessageViewModel newMessage)
         {
             var message = _mapper.Map<Message>(newMessage);
-            message = await _messageRepository.Create(message);
+            await _messageRepository.Add(message);
+            message = await _messageRepository.FindFirstWithIncludes(x => x.Id == message.Id, x => x.Chat, x => x.User);
             return _mapper.Map<MessageViewModel>(message);
         }
 
@@ -36,7 +37,8 @@ namespace Jobsity.Application.Services
 
         public async Task<IList<MessageViewModel>> GetByChatName(string chatName)
         {
-            return _mapper.Map<IList<MessageViewModel>>(await _messageRepository.GetMessagesFromChat(chatName));
+            var messages = await _messageRepository.FindWithIncludes(x => x.Chat.Name == chatName, x => x.Chat, x => x.User);
+            return _mapper.Map<IList<MessageViewModel>>(messages.OrderByDescending(x => x.CreatedAt).Take(50));
         }
     }
 }

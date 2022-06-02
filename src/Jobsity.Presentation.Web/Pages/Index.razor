@@ -1,124 +1,219 @@
 ﻿@attribute [Authorize]
 @page "/"
 @using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.JSInterop
 @inject IAccountService AccountService
 @inject IChatService ChatService
-@inject IMessageService MessageService
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
+@inject IJSRuntime JS
 
-<div class="container">
-  <div class="center">
-    <div class="chat-up">
-        <div class="groups">
-            @foreach (var group in groups)
-            {
-                var groupName = group.Name;
-                var groupId = group.Id;
-                <button class="groupsbtn" @onclick="() => JoinRoom(groupName, groupId)" disabled="@(!IsConnected)">@group.Name</button>
-            }
+<div class="modal" id="create-room-modal">
+    <div class="modal-body">
+        <button type="button" class="close" id="close-modal">X</button>
+        <header>Create Room</header>
+        <div>
+            <input @bind="newGroupName">
         </div>
-        <div class="chat">
-            <ul id="messagesList">
-            @foreach (var message in messages.OrderBy(x => x.CreatedAt))
-            {
-                <li>@message.Sender: @message.Text</li>
-            }
-            </ul>
+        <footer>
+            <button @onclick="() => CreateRoom(newGroupName)">Create</button>
+        </footer>
+    </div>
+</div>
+
+<div class="side-menu">
+    @foreach(var group in groups)
+    {
+        <a @onclick="() => JoinRoom(group.Name, group.Id)" class="room-button">
+            @group.Name
+        </a>
+    }
+
+    <a class="room-button" id="create-room-btn">
+        <strong>+</strong>
+    </a>    
+</div>
+
+<div class="chat">
+    <div class="chat-body" id="chat-body">
+        @foreach(var message in messages.OrderBy(x => x.CreatedAt).TakeLast(50)){
+        <div class="message">
+            <header>@message.Sender:</header>
+            <p>@message.Text</p>
+            <footer>@message.CreatedAt</footer>
         </div>
+        }
     </div>
     
-    <div class="chat-bottom">
-        <div class="add-room">
-            <div style="height: 100%">
-                <input style="width: 85%;display: inline-block;float: left;height: 60%;" @bind="newGroupName" type="text" placeholder="Create a new room!" />
-                <button style="width: 15%;display: inline-block;float: right;height: 60%;" @onclick="() => JoinRoom(newGroupName, null)">Add</button>
-            </div>
-            
-        </div>
-        <div class="send-msg">
-            <div style="height: 100%">
-                <input style="width: 90%;display: inline-block;float: left;height: 60%;" @bind="message" disabled="@(string.IsNullOrEmpty(GroupName))" type="text" placeholder="Send a message!" />
-                <button style="width: 10%;display: inline-block;float: right;height: 60%;" disabled="@(string.IsNullOrEmpty(GroupName))" @onclick="() => Send(message, GroupName, GroupId.Value)">Send</button>
-            </div>
-        </div>
+    <div class="chat-input">
+        <input @bind="message" disabled="@(!IsConnected || string.IsNullOrEmpty(GroupName))" id="inputToSend" type="text">
+        <button @onclick="() => Send(message, GroupName, GroupId.Value)" disabled="@(!IsConnected || string.IsNullOrEmpty(GroupName))" style="border: none;max-width: 140px;">Send</button>
     </div>
-  </div>
 </div>
 
 <style>
 
-.groupsbtn {
-    display: block;
+.modal {
+  display: none;
+  position: fixed;
+  min-height: 100vh;
+  min-width: 100vw;
+  z-index: 200;
+  top: 0;
+  left: 0;
+  background-color: rgba(0.2, 0.2, 0.2, 0.8);
+}
+
+.modal.active {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-body > .close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  margin-top: 0;
+}
+
+.modal-body {
+  position: relative;
+  min-width: 300px;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  background-color: #5c4773;
+  padding: 1rem;
+  border-radius: 5px;
+}
+
+.modal-body > * {
+  margin-top: 0.75rem;
+}
+
+.modal-body > header {
+  color: #fff;
+  font-size: 24px;
+}
+
+.modal-body > div > input {
+  width: 100%;
+}
+
+.modal-body > footer {
+  text-align: center;
+}
+
+.side-menu{
+    background-color: #494f54;
+    min-width: 100px;
+    max-width: 100px;
+    z-index: 50;
+    box-shadow: 1px 0 2px 0 #333;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     overflow: hidden;
-    width: 90%;
-    margin: 5px;
 }
 
-.chat-bottom{
-    display: block;
-    width: 100%;
-    height: 10%;
+.room-button{
+    color: white;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0.75rem 1rem 0;
+    height: 68px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px 1px #333;
+    background-color: #57446b;
+    text-align: center;
 }
 
-.chat-up{
-    display: block;
-    width: 100%;
-    height: 94%;
+.room-button:hover {
+    box-shadow: 0 2px 3px 1px #222;
+    color: white;
+    text-decoration: none;
 }
 
-.add-room{
-    display: inline-block;
-    height: 100%;
-    width: 25%;
-    float: left;
+.room-button > strong {
+    font-size: 36px;
 }
 
-.groups {
-    display: inline-block;
-    height: 100%;
+.chat-body{
+    background-color: white;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 1rem;
     overflow: auto;
-    width: 25%;
-    float: left;
+    max-height: calc(100% - 70px);
+    width: 100%
 }
 
-.send-msg{
-    display: inline-block;
-    height: 100%;
-    width: 73%;
-    float: right;
+.message {
+    display: flex;
+    flex-direction: row;
+    margin-top: 3px;
 }
 
-.chat {
-    display: inline-block;
-    height: 100%;
-    overflow: auto;
-    width: 73%;
-    float: right;
+.message:first-child{
+    margin-top: auto;
 }
 
-.container {
-    height: 85vh;
-    margin-top: 25px;
-    border-radius: 3px;
-    position: relative;
-    border: 3px solid gray;
+.message > header {
+    font-weight: bold;
+    min-width: 100px;
+    text-align: right;
 }
 
-.center {
-  margin: 0;
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
+.message > * {
+    padding: 0.2rem;
 }
+
+.message > p {
+    margin: 0;
+    flex-grow: 5;
+}
+
+.message > footer {
+    min-width: 60px;
+    text-align: center;
+    padding-right: 1rem;
+}
+
+.chat{
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+}
+
+.chat-input {
+  background-color: #494f54;
+  min-height: 70px;
+  max-height: 70px;
+  z-index: 25;
+  box-shadow: 0 -1px 2px 0 #333;
+  display: flex;
+  flex-direction: row;
+  padding: 1rem;
+}
+
+.chat-input > input {
+  flex-grow: 2;
+}
+
+.chat-input > button {
+  flex-grow: 1;
+}
+
 </style>
 
 @code {
     private HubConnection? hubConnection;
+    private string? ConnectionId;
     private List<MessageViewModel> messages = new List<MessageViewModel>();
     private string? message;
     private string? newGroupName;
@@ -134,7 +229,13 @@
             .WithAutomaticReconnect()
             .Build();
 
-        UpdateGroups();
+        await hubConnection.StartAsync();
+
+        while(!IsConnected) {};
+
+        ConnectionId = hubConnection.ConnectionId;
+
+        await UpdateGroups();
 
         hubConnection.On<string, string>("ReceiveMessage", (sender, message) =>
         {
@@ -143,40 +244,46 @@
             StateHasChanged();
         });
 
-        await hubConnection.StartAsync();
+        hubConnection.On<string, string>("CreateChat", (groupId, groupName) =>
+        {
+            groups.Add(new ChatViewModel { Id = Guid.Parse(groupId), Name = groupName});
+            GroupId = Guid.Parse(groupId);
+            GroupName = groupName;
+            StateHasChanged();
+        });
     }
 
     private async Task UpdateGroups()
     {
-        groups = await ChatService.Initialize();
+        groups = await ChatService.GetChats();
         StateHasChanged();
     }
 
     private async Task UpdateMessages(string groupName)
     {
-        messages = await MessageService.GetMessagesFromGroup(groupName);
+        messages = await ChatService.GetMessagesFromGroup(groupName);
         StateHasChanged();
+        await ScrollOnBottom();
     }
 
     private async Task JoinRoom(string groupName, Guid? groupId)
     {
         if (hubConnection is not null)
         {
-            try
-            {
-                await hubConnection.InvokeAsync("JoinRoom", groupName);
-                UpdateMessages(groupName);
-                UpdateGroups();
+            await ChatService.JoinRoom(ConnectionId, groupName, groupId.Value);
+            await UpdateMessages(groupName);
 
-                if (groupId is null) groupId = groups.Last().Id;
-                else GroupId = groupId;
-                
-                GroupName = groupName;
-            }
-            catch
-            {
-                
-            }
+            GroupId = groupId;
+            GroupName = groupName;
+        }
+    }
+
+    private async Task CreateRoom(string groupName)
+    {
+        if (hubConnection is not null)
+        {
+            await ChatService.CreateRoom(groupName);
+            messages = new List<MessageViewModel>();
         }
     }
 
@@ -184,7 +291,8 @@
     {
         if (hubConnection is not null)
         {
-            await hubConnection.InvokeAsync("SendMessageToSpecificGroup", groupName, AccountService.User.UserName, message, groupId, AccountService.User.Id);
+            await ChatService.SendMessage(message, AccountService.User.UserName, AccountService.User.Id, groupName, groupId);
+            await ScrollOnBottom();
         }
     }
 
@@ -197,5 +305,15 @@
         {
             await hubConnection.DisposeAsync();
         }
+    }
+
+    protected async override void OnAfterRender(bool firstRender)
+    {
+        await JS.InvokeVoidAsync("startModal");
+    }
+
+    public async Task ScrollOnBottom()
+    {
+        await JS.InvokeVoidAsync("scrollAlwaysBottomAndCleanInput");
     }
 }

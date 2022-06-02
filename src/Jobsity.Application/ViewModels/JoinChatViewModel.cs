@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace Jobsity.Application.ViewModels
 {
-    public class NewChatViewModel
+    public class JoinChatViewModel
     {
+        
+        [Required]
+        public Guid Id { get; set; }
         [Required]
         public string Name { get; set; }
-
-        public NewChatViewModel(string name)
-        {
-            Name = name;
-        }
+        [Required]
+        public string ConnectionId { get; set; }
     }
 }

@@ -8,7 +8,7 @@ namespace Jobsity.API.Configurations
         {
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<ChatHub>($"/{nameof(ChatHub)}");
+                endpoints.MapHub<ChatHub>($"/ChatHub");
             });
 
             return app;

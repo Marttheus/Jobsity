@@ -16,10 +16,5 @@ namespace Jobsity.Infra.Data.Repository
         {
             
         }
-
-        public async Task<Chat?> GetByChatName(string chatName)
-        {
-            return await _dataContext.Set<Chat>().Where(x => x.Name == chatName).FirstOrDefaultAsync();
-        }
     }
 }

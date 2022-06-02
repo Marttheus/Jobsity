@@ -11,6 +11,14 @@ namespace Jobsity.Presentation.Web.Models
         public T Data { get; set; }
     }
 
+    public class Response
+    {
+        public int Status { get; set; }
+        public string? Message { get; set; }
+        public List<string> Errors { get; set; }
+        public object Data { get; set; }
+    }
+
     public class SignInResponse
     {
         public string StatusMessage { get; set; }
@@ -37,11 +45,35 @@ namespace Jobsity.Presentation.Web.Models
         public string Name { get; set; }
     }
 
+    public class JoinChatViewModel
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string ConnectionId { get; set; }
+    }
     public class MessageViewModel
     {
         public string Text { get; set; }
         public string Sender { get; set; }
         public string Group { get; set; }
         public DateTime CreatedAt { get; set; }
+    }
+
+    public class NewMessageViewModel
+    {
+        public string Text { get; set; }
+        public string Sender { get; set; }
+        public string UserId { get; set; }
+        public string ChatName { get; set; }
+        public Guid ChatId { get; set; }
+
+        public NewMessageViewModel(string text, string sender, string userId, string chatName, Guid chatId)
+        {
+            Text = text;
+            Sender = sender;
+            UserId = userId;
+            ChatName = chatName;
+            ChatId = chatId;
+        }
     }
 }

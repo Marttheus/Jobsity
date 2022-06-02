@@ -20,7 +20,7 @@ namespace Jobsity.Application.Services
         public async Task<ChatViewModel> Create(NewChatViewModel newChat)
         {
             var chat = _mapper.Map<Chat>(newChat);
-            chat = await _chatRepository.Create(chat);
+            chat = await _chatRepository.Add(chat);
             return _mapper.Map<ChatViewModel>(chat);
         }
 
@@ -31,7 +31,7 @@ namespace Jobsity.Application.Services
 
         public async Task<ChatViewModel> GetByChatName(string chatName)
         {
-            return _mapper.Map<ChatViewModel>(await _chatRepository.GetByChatName(chatName));
+            return _mapper.Map<ChatViewModel>(await _chatRepository.FindFirst(x => x.Name == chatName));
         }
     }
 }

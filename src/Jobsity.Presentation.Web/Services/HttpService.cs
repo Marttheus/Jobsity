@@ -19,6 +19,8 @@ namespace Jobsity.Presentation.Web.Services
         Task<T> Get<T>(string uri);
         Task Post(string uri, object value);
         Task<T> Post<T>(string uri, object value);
+        Task<T> Post<T>(string uri);
+        Task Post(string uri);
         Task Put(string uri, object value);
         Task<T> Put<T>(string uri, object value);
         Task Delete(string uri);
@@ -60,6 +62,18 @@ namespace Jobsity.Presentation.Web.Services
         {
             var request = createRequest(HttpMethod.Post, uri, value);
             return await sendRequest<T>(request);
+        }
+
+        public async Task<T> Post<T>(string uri)
+        {
+            var request = createRequest(HttpMethod.Post, uri);
+            return await sendRequest<T>(request);
+        }
+
+        public async Task Post(string uri)
+        {
+            var request = createRequest(HttpMethod.Post, uri);
+            await sendRequest(request);
         }
 
         public async Task Put(string uri, object value)
