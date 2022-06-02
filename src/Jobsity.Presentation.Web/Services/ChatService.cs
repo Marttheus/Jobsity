@@ -12,9 +12,9 @@ namespace Jobsity.Presentation.Web.Services
     {
         User User { get; }
         Task<List<ChatViewModel>> GetChats();
-        Task JoinRoom(string connectionId, string groupName, Guid groupId);
+        Task JoinRoom(string connectionId, string groupName, string groupId);
         Task<List<MessageViewModel>> GetMessagesFromGroup(string groupName);
-        Task SendMessage(string message, string sender, string userId, string groupName, Guid groupId);
+        Task SendMessage(string message, string sender, string userId, string groupName, string groupId);
         Task CreateRoom(string groupName);
     }
 
@@ -37,7 +37,7 @@ namespace Jobsity.Presentation.Web.Services
             return result.Data;
         }
 
-        public async Task JoinRoom(string connectionId, string groupName, Guid groupId)
+        public async Task JoinRoom(string connectionId, string groupName, string groupId)
         {
             var result = await _httpService.Post<Response>("/api/Chat/Join", new JoinChatViewModel { ConnectionId = connectionId, Name = groupName, Id = groupId });
         }
@@ -49,7 +49,7 @@ namespace Jobsity.Presentation.Web.Services
             return result.Data;
         }
 
-        public async Task SendMessage(string message, string sender, string userId, string groupName, Guid groupId)
+        public async Task SendMessage(string message, string sender, string userId, string groupName, string groupId)
         {
             var result = await _httpService.Post<Response>("/api/Message", new NewMessageViewModel(message, sender, userId, groupName, groupId));
         }

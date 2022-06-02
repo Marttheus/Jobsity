@@ -18,9 +18,9 @@ namespace Jobsity.Application.ViewModels
         [Required]
         public string ChatName { get; set; }
         [Required]
-        public Guid ChatId { get; set; }
+        public string ChatId { get; set; }
 
-        public NewMessageViewModel(string text, string sender, string userId, string chatName, Guid chatId)
+        public NewMessageViewModel(string text, string sender, string userId, string chatName, string chatId)
         {
             Text = text;
             Sender = sender;

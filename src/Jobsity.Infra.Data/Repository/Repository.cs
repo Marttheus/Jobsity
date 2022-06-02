@@ -22,7 +22,7 @@ namespace Jobsity.Infra.Data.Repository
             return obj;
         }
 
-        public async Task Delete<TID>(TID id)
+        public async Task Delete(string id)
         {
             var obj = await GetById(id);
             if (obj is not null) _dataContext.Set<T>().Remove(obj);
@@ -38,7 +38,7 @@ namespace Jobsity.Infra.Data.Repository
             return await _dataContext.Set<T>().ToListAsync();
         }
 
-        public async Task<T?> GetById<TID>(TID id)
+        public async Task<T?> GetById(string id)
         {
             return await _dataContext.Set<T>().FindAsync(id);
         }

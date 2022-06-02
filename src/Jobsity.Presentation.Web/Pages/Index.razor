@@ -47,7 +47,7 @@
     
     <div class="chat-input">
         <input @bind="message" disabled="@(!IsConnected || string.IsNullOrEmpty(GroupName))" id="inputToSend" type="text">
-        <button @onclick="() => Send(message, GroupName, GroupId.Value)" disabled="@(!IsConnected || string.IsNullOrEmpty(GroupName))" style="border: none;max-width: 140px;">Send</button>
+        <button @onclick="() => Send(message, GroupName, GroupId)" disabled="@(!IsConnected || string.IsNullOrEmpty(GroupName))" style="border: none;max-width: 140px;">Send</button>
     </div>
 </div>
 
@@ -218,7 +218,7 @@
     private string? message;
     private string? newGroupName;
     private string? GroupName;
-    private Guid? GroupId;
+    private string? GroupId;
     private List<ChatViewModel> groups = new List<ChatViewModel>();
     private const string baseUrl = "http://localhost:5159";
 
@@ -246,8 +246,8 @@
 
         hubConnection.On<string, string>("CreateChat", (groupId, groupName) =>
         {
-            groups.Add(new ChatViewModel { Id = Guid.Parse(groupId), Name = groupName});
-            GroupId = Guid.Parse(groupId);
+            groups.Add(new ChatViewModel { Id = groupId, Name = groupName});
+            GroupId = groupId;
             GroupName = groupName;
             StateHasChanged();
         });
@@ -266,11 +266,11 @@
         await ScrollOnBottom();
     }
 
-    private async Task JoinRoom(string groupName, Guid? groupId)
+    private async Task JoinRoom(string groupName, string groupId)
     {
         if (hubConnection is not null)
         {
-            await ChatService.JoinRoom(ConnectionId, groupName, groupId.Value);
+            await ChatService.JoinRoom(ConnectionId, groupName, groupId);
             await UpdateMessages(groupName);
 
             GroupId = groupId;
@@ -287,7 +287,7 @@
         }
     }
 
-    private async Task Send(string message, string groupName, Guid groupId)
+    private async Task Send(string message, string groupName, string groupId)
     {
         if (hubConnection is not null)
         {

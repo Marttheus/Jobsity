@@ -41,13 +41,13 @@ namespace Jobsity.Presentation.Web.Models
 
     public class ChatViewModel
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
     }
 
     public class JoinChatViewModel
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
         public string ConnectionId { get; set; }
     }
@@ -65,9 +65,9 @@ namespace Jobsity.Presentation.Web.Models
         public string Sender { get; set; }
         public string UserId { get; set; }
         public string ChatName { get; set; }
-        public Guid ChatId { get; set; }
+        public string ChatId { get; set; }
 
-        public NewMessageViewModel(string text, string sender, string userId, string chatName, Guid chatId)
+        public NewMessageViewModel(string text, string sender, string userId, string chatName, string chatId)
         {
             Text = text;
             Sender = sender;

@@ -8,7 +8,7 @@ namespace Jobsity.Application.ViewModels
 {
     public class ChatViewModel
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
     }
 }

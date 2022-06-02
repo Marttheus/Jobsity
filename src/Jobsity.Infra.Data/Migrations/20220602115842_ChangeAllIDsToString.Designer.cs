@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jobsity.Infra.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220531194140_AddedChatAndMessagesTable")]
-    partial class AddedChatAndMessagesTable
+    [Migration("20220602115842_ChangeAllIDsToString")]
+    partial class ChangeAllIDsToString
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -26,8 +26,8 @@ namespace Jobsity.Infra.Data.Migrations
 
             modelBuilder.Entity("ChatUser", b =>
                 {
-                    b.Property<Guid>("ChatsId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("ChatsId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UsersId")
                         .HasColumnType("nvarchar(450)");
@@ -41,9 +41,8 @@ namespace Jobsity.Infra.Data.Migrations
 
             modelBuilder.Entity("Jobsity.Domain.Models.Chat", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -66,12 +65,12 @@ namespace Jobsity.Infra.Data.Migrations
 
             modelBuilder.Entity("Jobsity.Domain.Models.Message", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<Guid>("ChatId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("ChatId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -159,6 +158,20 @@ namespace Jobsity.Infra.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "00000000-0000-0000-0000-000000000000",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "17b971cb-d3eb-4b33-89d0-759b705c584c",
+                            EmailConfirmed = false,
+                            LockoutEnabled = false,
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "d1c50e3a-ed03-4cde-9a31-a0fd5ae48f16",
+                            TwoFactorEnabled = false,
+                            UserName = "BOT"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

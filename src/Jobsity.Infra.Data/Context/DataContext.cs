@@ -26,6 +26,13 @@ namespace Jobsity.Infra.Data.Context
             modelBuilder.ApplyConfiguration(new ChatMap());
             modelBuilder.ApplyConfiguration(new MessageMap());
 
+            // Seed Data - BOT user
+            modelBuilder.Entity<User>().HasData(new User
+            {
+                Id = new Guid().ToString(),
+                UserName = "BOT"
+            });
+
             base.OnModelCreating(modelBuilder);
         }
     }
