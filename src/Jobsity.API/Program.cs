@@ -40,6 +40,8 @@ builder.Services.AddControllers().AddNewtonsoftJson(x => x.SerializerSettings.Re
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddMassTransitConfiguration(builder.Configuration);
+
 builder.Services.AddDatabaseConfiguration(builder.Configuration);
 
 // ASP.NET Identity Settings & JWT
